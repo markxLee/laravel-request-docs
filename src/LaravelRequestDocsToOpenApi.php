@@ -21,8 +21,11 @@ class LaravelRequestDocsToOpenApi
         $this->openApi['info']['description']     = config('request-docs.document_name', 'LRD');
         $this->openApi['info']['license']['name'] = config('request-docs.open_api.license', 'Apache 2.0');
         $this->openApi['info']['license']['url']  = config('request-docs.open_api.license_url', 'https://www.apache.org/licenses/LICENSE-2.0.html');
+        $url = config('request-docs.open_api.server_url', config('app.url'));
+        $docPort = env('DOC_PORT');
+        $url = $docPort && $docPort != '80' ? $url.':'.$docPort : $url;
         $this->openApi['servers'][]               = [
-            'url' => config('request-docs.open_api.server_url', config('app.url'))
+            'url' => $url
         ];
 
         $this->docsToOpenApi($docs);
@@ -39,11 +42,11 @@ class LaravelRequestDocsToOpenApi
             $isPost   = $httpMethod == 'post';
             $isPut    = $httpMethod == 'put';
             $isDelete = $httpMethod == 'delete';
+            $key = "/".$doc['uri'];
+            $this->openApi['paths'][$key][$httpMethod]['description'] = $doc['docBlock'];
+            $this->openApi['paths'][$key][$httpMethod]['parameters'] = [];
 
-            $this->openApi['paths'][$doc['uri']][$httpMethod]['description'] = $doc['docBlock'];
-            $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'] = [];
-
-            $this->openApi['paths'][$doc['uri']][$httpMethod]['responses'] = config('request-docs.open_api.responses', []);
+            $this->openApi['paths'][$key][$httpMethod]['responses'] = config('request-docs.open_api.responses', []);
 
             foreach ($doc['rules'] as $attribute => $rules) {
                 foreach ($rules as $rule) {
@@ -60,20 +63,20 @@ class LaravelRequestDocsToOpenApi
             $contentType = $requestHasFile ? 'multipart/form-data' : 'application/json';
 
             if ($isGet) {
-                $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'] = [];
+                $this->openApi['paths'][$key][$httpMethod]['parameters'] = [];
             }
             if ($isPost || $isPut || $isDelete) {
-                $this->openApi['paths'][$doc['uri']][$httpMethod]['requestBody'] = $this->makeRequestBodyItem($contentType);
+                $this->openApi['paths'][$key][$httpMethod]['requestBody'] = $this->makeRequestBodyItem($contentType);
             }
 
             foreach ($doc['rules'] as $attribute => $rules) {
                 foreach ($rules as $rule) {
                     if ($isGet) {
                         $parameter = $this->makeQueryParameterItem($attribute, $rule);
-                        $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'][] = $parameter;
+                        $this->openApi['paths'][$key][$httpMethod]['parameters'][] = $parameter;
                     }
                     if ($isPost || $isPut || $isDelete) {
-                        $this->openApi['paths'][$doc['uri']][$httpMethod]['requestBody']['content'][$contentType]['schema']['properties'][$attribute] = $this->makeRequestBodyContentPropertyItem($rule);
+                        $this->openApi['paths'][$key][$httpMethod]['requestBody']['content'][$contentType]['schema']['properties'][$attribute] = $this->makeRequestBodyContentPropertyItem($rule);
                     }
                 }
             }
