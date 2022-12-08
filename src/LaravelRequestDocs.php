@@ -111,7 +111,6 @@ class LaravelRequestDocs
                 continue;
             }
         }
-
         return $controllersInfo;
     }
 
