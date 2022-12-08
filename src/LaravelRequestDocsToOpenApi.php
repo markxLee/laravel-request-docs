@@ -27,7 +27,9 @@ class LaravelRequestDocsToOpenApi
         $this->openApi['servers'][]               = [
             'url' => $url
         ];
-
+        $this->openApi['components']['securitySchemes']['bearerAuth']['type'] = 'http';
+        $this->openApi['components']['securitySchemes']['bearerAuth']['scheme'] = 'bearer';
+        $this->openApi['components']['securitySchemes']['bearerAuth']['bearerFormat'] = 'JWT';
         $this->docsToOpenApi($docs);
         return $this;
     }
@@ -35,6 +37,8 @@ class LaravelRequestDocsToOpenApi
     private function docsToOpenApi(array $docs)
     {
         $this->openApi['paths'] = [];
+        $this->openApi['paths']['/api/sanctum/csrf-cookie']['description'] = '';
+        $this->openApi['paths']['/api/auth/login']['description'] = '';
         foreach ($docs as $doc) {
             $requestHasFile = false;
             $httpMethod = strtolower($doc['httpMethod']);
@@ -45,7 +49,8 @@ class LaravelRequestDocsToOpenApi
             $key = "/".$doc['uri'];
             $this->openApi['paths'][$key][$httpMethod]['description'] = $doc['docBlock'];
             $this->openApi['paths'][$key][$httpMethod]['parameters'] = [];
-
+            $this->openApi['paths'][$key][$httpMethod]['security'] = [];
+            $this->openApi['paths'][$key][$httpMethod]['security'][]['bearerAuth'] = [];
             $this->openApi['paths'][$key][$httpMethod]['responses'] = config('request-docs.open_api.responses', []);
 
             foreach ($doc['rules'] as $attribute => $rules) {

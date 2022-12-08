@@ -13,7 +13,11 @@ window.onload = function() {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
+    requestInterceptor: (req) => {
+      req.headers.Authorization = "Bearer " + req.headers.Authorization
+    return req
+    }  
   });
 
   //</editor-fold>
