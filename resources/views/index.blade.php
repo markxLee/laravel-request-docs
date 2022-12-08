@@ -590,6 +590,8 @@
         }
         var docs = {!! json_encode($docs) !!};
         var app_url = {!! json_encode(config('app.url')) !!};
+        var app_port = {!! json_encode(env('DOC_PORT')) !!};
+        app_url = app_port && app_port !== '80' ? app_url + ':' + app_port : app_url;
 
         //remove trailing slash if any
         app_url = app_url.replace(/\/$/, '')
