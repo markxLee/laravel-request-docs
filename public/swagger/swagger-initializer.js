@@ -3,7 +3,7 @@ window.onload = function () {
 
     // the following lines will be replaced by docker/configurator, when it runs in a docker-container
     window.ui = SwaggerUIBundle({
-        url: window.location.origin + "/request-docs?openapi=true",
+        url: "../request-docs?openapi=true",
         dom_id: "#swagger-ui",
         deepLinking: true,
         presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
@@ -11,7 +11,6 @@ window.onload = function () {
         layout: "StandaloneLayout",
         requestInterceptor: (req) => {
             req.headers.Authorization = "Bearer " + req.headers.Authorization;
-            request.credentials = "include";
             return req;
         },
     });
